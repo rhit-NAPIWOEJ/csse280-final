@@ -1,0 +1,139 @@
+:root {
+    --navbar-height: 7.5vh;
+    --big-body-height: 92.5vh;
+    --small-body-height: 85vh;
+
+    --sidebar-change-width: 968.5px;
+
+    --mono-font-fam: 'Ubuntu Mono', 'Consolas', monospace;
+}
+
+header * {
+    font-family: var(--mono-font-fam);
+}
+body {
+    background: #EEEEEE;
+    height: var(--body-height);
+    /* Let children handle overflown text */
+    overflow: visible; 
+}
+.page-container > * {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+hr {
+    color: #000000DD;
+}
+.flex-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+.text-center {
+    text-align: center;
+}
+
+/* Navbar Settings */
+.navbar {
+    background-color: #673AB7;
+    color: white;
+    height: var(--navbar-height);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.navbar > div {
+    font-size: 30px;
+    padding: 10px 10px;
+}
+
+/* For index.html */
+.home-page-content {
+    max-width: 1360px;
+    margin: auto;
+}
+/* For the engine-search box */
+#engine-search {
+    max-width: 960px;
+    margin: 10px auto;
+}
+#engine-search > * {
+    margin: 10px 10px;
+}
+.engine-search-tool {
+    outline: 3px solid black;
+    border-radius: 1rem;
+    align-items: center;
+}
+.engine-search-tool > * {
+    margin: 0.25rem 1rem;
+}
+#uci-cbox, #windows-cbox, #linux-cbox {
+    margin-right: 10px;
+}
+
+/* For engine.html */
+.info-bar {
+    /* Temporary color distinguisher */
+    background-color: #DDDDDD;
+}
+.info-bar ul {
+    padding-left: 0px;
+}
+
+.article {
+    /* Have this contain the scroll bar instead of the body div */
+    overflow: auto;
+}
+
+.wiki-content {
+    display: flex;
+}
+.wiki-content > * {
+    padding: 10px auto;
+}
+
+@media (min-width: 969px) {
+    /* Force the info bar to be the entire column */
+    .info-bar {
+        height: var(--big-body-height);
+        width: 25vw;
+    }
+    .info-bar > * {
+        flex-direction: column;
+    }
+    .article {
+        height: var(--big-body-height);
+        width: 75vw;
+    }
+}
+@media (max-width: 968px) {
+    /* Force the info-bar to be horizontally displayed above the article */
+    .info-bar {
+        /* Fix not having enough space to prevent overflow */
+        height: var(--navbar-height);
+        width: 100vw;
+    }
+    .article {
+        height: var(--small-body-height);
+        width: 100vw;
+    }
+    .wiki-content {
+        /* IDK what I need here honestly */
+        flex-wrap: wrap;
+        flex-direction: row;
+    }
+}
+
+/* Stuff for edit.html */
+textarea {
+    font-family: var(--mono-font-fam);
+    margin-top: 10px;
+    max-width: 95%;
+    width: 95%;
+    max-height: 90%;
+    height: 90%;
+    resize: vertical;
+}

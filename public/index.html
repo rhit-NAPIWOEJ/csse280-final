@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <style>@import url('https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap');</style> 
+  <link rel="stylesheet" href="styles/normalize.css">
+  <link rel="stylesheet" href="styles/main.css">
+  <title>OS CHESS</title>
+</head>
+
+<body>
+  <header class="navbar">
+    <div>OSC</div>
+    <div>Login</div>
+  </header>
+  
+  <div class="page-container home-page-content">
+    <h1 class="text-center">OS CHESS</h1>
+    <h3 class="text-center">Dedicated to open-source chess.</h3>
+    <p>This is a site containing a large list of open-source chess programs, including informative articles about each one.
+      In the open-source spirit, you can make also requests to add and edit articles, expanding on the knowledge base.
+      Logging in will allow you to see whether the status of your change requests.
+    </p>
+    <hr>
+    <!-- TODO: Add flexbox icons for various articles -->
+    <hr>
+    
+    <p>In particular, this site has a focus on chess-playing programs and their implementation.
+      A detail search is provided for people looking for engines.
+    </p>
+   
+    <div id="engine-search">
+      <h3>Engine Search:</h3>
+      <div class="engine-search-tool flex-wrap">
+        <div>
+          <label for="program-lang-drop">Programming Language:</label>
+          <select name="program-lang-drop" id="program-lang-drop">
+            <option></option>
+          </select>
+        </div>
+
+        <div>
+          <label for="license-drop">License:</label>
+          <select name="license-drop" id="license-drop">
+            <option></option>
+          </select>
+        </div>
+
+        <div>
+          <label for="protocol-drop">Protocols:</label>
+          <select name="protocol-drop" id="protocol-drop">
+            <option>Any of</option>
+            <option>All of</option>
+          </select>
+          <div class="flex-wrap">
+            <div>
+              <label for="uci-cbox">UCI</label>
+              <input type="checkbox" id="uci-cbox" name="uci-cbox">
+            </div><div>
+              <label for="cecp-cbox">CECP</label>
+              <input type="checkbox" id="cecp-cbox" name="cecp-cbox">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label for="os-drop">Supported OS:</label>
+          <select name="os-drop" id="os-drop">
+            <option>Any of</option>
+            <option>All of</option>
+          </select>
+          <div class="flex-wrap">      
+            <div>
+              <label for="windows-cbox">Windows</label>
+              <input type="checkbox" id="windows-cbox" name="windows-cbox" checked>
+            </div>
+            <div>
+              <label for="linux-cbox">Linux</label>
+              <input type="checkbox" id="linux-cbox" name="linux-cbox" checked>
+            </div>
+            <div>
+              <label for="macos-cbox">MacOS</label>
+              <input type="checkbox" id="macos-cbox" name="macos-cbox" checked>
+            </div>
+          </div>
+        </div>
+
+        <input type="button" id="engine-search-btn" value="Search">
+      </div>
+    </div>
+    <hr>
+    
+  </div>
+
+  <script src="/__/firebase/7.18.0/firebase-app.js"></script>
+  <script src="/__/firebase/7.18.0/firebase-auth.js"></script>
+  <script src="/__/firebase/7.18.0/firebase-firestore.js"></script>
+  <script src="/__/firebase/init.js"></script>
+
+  <script src="scripts/main.js"></script>
+</body>
+
+</html>
