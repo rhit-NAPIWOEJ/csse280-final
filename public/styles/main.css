@@ -14,7 +14,7 @@ header * {
 body {
     background: #EEEEEE;
     height: var(--body-height);
-    /* Let children handle overflown text */
+    /* Let child handle overflown text */
     overflow: visible; 
 }
 .page-container > * {
@@ -44,16 +44,18 @@ hr {
     align-items: center;
     justify-content: space-between;
 }
-.navbar > div {
+.navbar a {
     font-size: 30px;
     padding: 10px 10px;
+    color: white;
 }
 
-/* For index.html */
-.home-page-content {
+/* For index and login, which take up the entire page otherwise */
+.full-page-content {
     max-width: 1360px;
     margin: auto;
 }
+
 /* For the engine-search box */
 #engine-search {
     max-width: 960px;
@@ -74,13 +76,23 @@ hr {
     margin-right: 10px;
 }
 
-/* For engine.html */
+/* For the side bar */
 .info-bar {
     /* Temporary color distinguisher */
     background-color: #DDDDDD;
 }
 .info-bar ul {
     padding-left: 0px;
+    margin: 8px auto;
+}
+.info-bar input[type=button] {
+    font-family: var(--mono-font-fam);
+}
+.info-bar input[type=button][value="+"] {
+    color: #008888;
+}
+.info-bar input[type=button][value="–"] {
+    color: #880000;
 }
 
 .article {
@@ -108,9 +120,13 @@ hr {
         height: var(--big-body-height);
         width: 75vw;
     }
+    #engine-logo {
+        margin: 8px auto;
+    }
 }
 @media (max-width: 968px) {
     /* Force the info-bar to be horizontally displayed above the article */
+    /* This looks so ridiculously ugly with all of the info I've put into the bar *sigh*. */
     .info-bar {
         /* Fix not having enough space to prevent overflow */
         height: var(--navbar-height);
@@ -124,6 +140,9 @@ hr {
         /* IDK what I need here honestly */
         flex-wrap: wrap;
         flex-direction: row;
+    }
+    #engine-logo {
+        margin: 0px;
     }
 }
 

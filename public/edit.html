@@ -12,28 +12,47 @@
 
 <body>
   <header class="navbar">
-    <div>OSC</div>
-    <div>Login</div>
+    <a href="/">OSC</a>
+    <a href="/login.html">Login</a>
   </header>
 
   <div class="page-container wiki-content">
     <div class="info-bar">
       <div class="flex-wrap">
         <!-- TODO: Autogenerate this based on data for server (prob fb *sigh*) -->
-        <img class="text-center" style="margin: auto; margin-top: 10px;" src="images/hakkapeliitta.png" alt="Logo of Hakkapeliitta">
+        <img class="text-center" id="engine-logo" src="images/hakkapeliitta.png" alt="Logo of Hakkapeliitta">
 
-        <ul class="text-center" id="authors-list">Authors:
-         
-        </ul>
+        <ul class="text-center" id="author-list">Authors: <input type="text" id="author-input" size="8">
+        <input type="button" id="author-add" value="+"> <input type="button" id="author-remove" value="–"></ul>
 
-        <ul class="text-center">Source Code:
-          <li><a href="https://github.com/mAarnos/Hakkapeliitta">Github</a></li>
-        </ul>
+        <ul class="text-center" id="os-list">Supported OS:</ul>
+        <div class="flex-wrap">
+          <div>
+            <label for="windows-cbox">Windows</label>
+            <input type="checkbox" id="windows-cbox" name="windows-cbox">
+          </div>
+          <div>
+            <label for="linux-cbox">Linux</label>
+            <input type="checkbox" id="linux-cbox" name="linux-cbox">
+          </div>
+          <div>
+            <label for="macos-cbox">MacOS</label>
+            <input type="checkbox" id="macos-cbox" name="macos-cbox">
+          </div>
+        </div>
 
-        <ul class="text-center">Ratings:
-          <li><a href="https://ccrl.chessdom.com/ccrl/4040/cgi/engine_details.cgi?print=Details&each_game=1&eng=Hakkapeliitta%20TCEC%20v2%2064-bit#Hakkapeliitta_TCEC_v2_64-bit">CCRL 40/15</a></li>
-          <li><a href="https://ccrl.chessdom.com/ccrl/404/cgi/engine_details.cgi?print=Details&each_game=1&eng=Hakkapeliitta%20TCEC%20v2%2064-bit#Hakkapeliitta_TCEC_v2_64-bit">CCRL 40/4</a></li>
-        </ul>
+        <ul class="text-center" id="language-label">Programming Language: <input type="text" id="lang-input" size="8"></ul>
+
+        <ul class="text-center" id="license-label">Licensed Under: <input type="text" id="license-input" size="5"></ul>
+
+        <ul class="text-center" id="source-list">Source Code: <input type="text" id="source-input" placeholder="siteName" size="8">
+          <input type="url" id="source-url-input" placeholder="URL" size="8"> 
+          <input type="button" id="source-add" value="+"> <input type="button" id="source-remove" value="–"></ul>
+
+        <ul class="text-center" id="rating-list">Ratings: <input type="text" id="rating-input" placeholder="siteName" size="8">
+          <input type="url" id="rating-url-input" placeholder="URL" size="8"> 
+          <input type="button" id="rating-add" value="+"> <input type="button" id="rating-remove" value="–"></ul>
+
       </div>
     </div>
     <div class="article text-center">
