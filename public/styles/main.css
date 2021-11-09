@@ -34,6 +34,56 @@ hr {
     text-align: center;
 }
 
+/* Login Pop-up Settings */
+/* Significant Ideas for the CSS from https://html-online.com/articles/simple-popup-box/ */
+#popup-background {
+    z-index: 2;
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    text-align: center;
+    background-color: rgba(0,0,0,0.25);    
+}
+.popup-box {
+    z-index: 3;
+    border: 3px solid #999;
+    width: 50vw;
+    height: 50vh;
+    left: 25vw;
+    top: 25vh;
+    position: absolute;
+    display: none;
+    background-color: #EEEEEE;
+}
+.popup-box input[type=button] {
+    margin: 0px auto;
+}
+/* From the same source, although this I just straight up copied and tweeked. */
+.popup-close {
+    background-color: #EEEEEE;
+    border: 3px solid #999;
+    border-radius: 50px;
+    cursor: pointer;
+    display: inline-block;
+    font-weight: bold;
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 25px;
+    line-height: 30px;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+}
+.popup-close:hover {
+    background-color: #ccc;
+    color: #880000;
+}
+.popup-trigger {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 /* Navbar Settings */
 .navbar {
     background-color: #673AB7;
@@ -44,7 +94,7 @@ hr {
     align-items: center;
     justify-content: space-between;
 }
-.navbar a {
+.navbar * {
     font-size: 30px;
     padding: 10px 10px;
     color: white;
@@ -79,7 +129,7 @@ hr {
 /* For the side bar */
 .info-bar {
     /* Temporary color distinguisher */
-    background-color: #DDDDDD;
+    border: 3px solid #999;
 }
 .info-bar ul {
     padding-left: 0px;
@@ -112,6 +162,13 @@ hr {
     .info-bar {
         height: var(--big-body-height);
         width: 25vw;
+        border-bottom-width: 0px;
+        border-top-width: 0px;
+        border-left-width: 0px;
+    }
+    #engine-logo {
+        max-width: 15vw;
+        max-height: 15vh;
     }
     .info-bar > * {
         flex-direction: column;
@@ -131,6 +188,9 @@ hr {
         /* Fix not having enough space to prevent overflow */
         height: var(--navbar-height);
         width: 100vw;
+        border-top-width: 0px;
+        border-left-width: 0px;
+        border-right-width: 0px;
     }
     .article {
         height: var(--small-body-height);

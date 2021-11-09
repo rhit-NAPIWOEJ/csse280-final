@@ -11,9 +11,38 @@
 </head>
 
 <body>
+  <div id="popup-background" hidden>
+    <div class="popup-box" id="login-popup">
+      <div class="popup-close" id="login-popup-close">&times;</div>
+
+      <div class="flex-wrap" style="flex-direction: column; ">
+        <h1>Login:</h1>
+        <label for="login-email">Email: <input type="email" id="login-email"></label>
+        <label for="login-password">Password: <input type="password" id="login-password"></label>
+        <input type="button" id="login-button" value="Login">
+
+        <h1>Create Account:</h1>
+        <label for="new-account-email">Email: <input type="email" id="new-account-email"></label>
+        <label for="new-account-password1">Password: <input type="password" id="new-account-password1"></label>
+        <label for="new-account-password2">Confirm Password: <input type="password" id="new-account-password2"></label>
+        <input type="button" id="new-account-button" value="Create Account">
+      </div>
+    </div>
+
+    <div class="popup-box" id="new-engine-popup">
+      <div class="popup-close" id="new-engine-popup-close">&times;</div>
+      
+      <div class="flex-wrap" style="flex-direction: column;">
+        <h1>New Engine Name:</h1>
+        <input type="text" id="engine-name-input" style="margin: 0px auto;">
+        <input type="button" id="new-engine-button" value="Create">
+      </div>
+    </div>
+  </div>
+  
   <header class="navbar">
-    <a href="/">OSC</a>
-    <a href="/login.html">Login</a>
+    <span><a href="/">OSC</a> | <a class="popup-trigger" id="new-engine-popup-link">New</a></span>
+    <a class="popup-trigger" id="login-popup-link">Login</a>
   </header>
   
   <div class="page-container full-page-content">
@@ -23,8 +52,7 @@
       In the open-source spirit, you can make also requests to add and edit articles, expanding on the knowledge base.
       Logging in will allow you to see whether the status of your change requests.
     </p>
-    <hr>
-    <!-- TODO: Add flexbox icons for various articles -->
+    
     <hr>
     
     <p>In particular, this site has a focus on chess-playing programs and their implementation.
@@ -91,6 +119,8 @@
       </div>
     </div>
     <hr>
+    <!-- TODO: Add flexbox icons for various articles -->
+    <hr>
     
   </div>
 
@@ -98,6 +128,7 @@
   <script src="/__/firebase/7.18.0/firebase-auth.js"></script>
   <script src="/__/firebase/7.18.0/firebase-firestore.js"></script>
   <script src="/__/firebase/init.js"></script>
+  <script src="scripts/purify.min.js"></script>
 
   <script src="scripts/main.js"></script>
 </body>

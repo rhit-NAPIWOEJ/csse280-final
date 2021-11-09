@@ -9,7 +9,7 @@ osc.engineDetailManager = null;
 
 function htmlToElement(html) {
 	var template = document.createElement('template');
-	template.innerHTML = html.trim();
+	template.innerHTML = DOMPurify.sanitize(html.trim());
 	return template.content.firstChild;
 }
 
@@ -70,18 +70,11 @@ osc.EnginePageController = class {
         osList.innerHTML = "Supported OS:";
         sourceList.innerHTML = "Source Code:";
         ratingList.innerHTML = "Ratings:";    
-        document.getElementById("language-label").innerHTML = `Programming Language: ${osc.engineDetailManager.language}`;
-        document.getElementById("license-label").innerHTML = `Licensed Under: ${osc.engineDetailManager.license}`;
-
-        /**
-         * WARNING:
-         * Showdown does allow HTML tags to be used as part of its Markdown-formatted text. As a result,
-         * Cross Site Scripting (XSS) attacks are possible with this library if not handled properly.
-         * Then again, probably everything we made with input is susceptible to XSS, so ¯\_(ツ)_/¯.
-         * In testing, modern browsers may disable scripts in the README, but old versions of IE may not.
-         * */ 
-        document.getElementById("md-article").innerHTML =
-            `<p style="text-align:right"><a href="/edit.html?engine=${this.engineName}">Edit</a></p>` + osc.converter.makeHtml(osc.engineDetailManager.readme);
+        document.getElementById("language-label").innerHTML = DOMPurify.sanitize(`Programming Language: ${osc.engineDetailManager.language}`);
+        document.getElementById("license-label").innerHTML = DOMPurify.sanitize(`Licensed Under: ${osc.engineDetailManager.license}`);
+ 
+        document.getElementById("md-article").innerHTML =  DOMPurify.sanitize(
+            `<p style="text-align:right"><a href="/edit.html?engine=${this.engineName}">Edit</a></p>` + osc.converter.makeHtml(osc.engineDetailManager.readme));
 
         for (let author of osc.engineDetailManager.authors) authorList.append(htmlToElement(`<li>${author}</li>`));
         for (let source of osc.engineDetailManager.sources) sourceList.append(htmlToElement(`<li><a target="_blank" href="${source.url}">${source.site}</a></li>`));
@@ -183,6 +176,10 @@ osc.EditPageController = class {
             ratingURLInput.value = "";
         });
 
+        let logoInput = document.getElementById("logo-upload");
+        logoInput.addEventListener('change', e => {
+            document.getElementById("engine-logo").src = URL.createObjectURL(logoInput.files[0]);
+        });
     }
     initializeView() {
         this.engine.os = osc.engineDetailManager.os;
@@ -193,38 +190,44 @@ osc.EditPageController = class {
         this.engine.ratings = osc.engineDetailManager.ratings;
         this.engine.language = osc.engineDetailManager.language;
         
-        document.getElementById("windows-cbox").checked = (this.engine.os.indexOf("Windows") != -1);
-        document.getElementById("linux-cbox").checked = (this.engine.os.indexOf("Linux") != -1);
-        document.getElementById("macos-cbox").checked = (this.engine.os.indexOf("MacOS") != -1);
-
-        document.getElementById("lang-input").value = this.engine.language;
-        document.getElementById("license-input").value = this.engine.license;
-        document.getElementById("md-article-edit").value = this.engine.readme;
-
-        let authorList = document.getElementById("author-list");
-        for (let author of this.engine.authors) {
-            authorList.append(htmlToElement(`<li>${author}</li>`));
-            authorList.lastChild.addEventListener('click', function (e) {
-                document.getElementById("author-input").value = this.innerHTML;
-            });
+        if (this.engine.os) {
+            document.getElementById("windows-cbox").checked = (this.engine.os.indexOf("Windows") != -1);
+            document.getElementById("linux-cbox").checked = (this.engine.os.indexOf("Linux") != -1);
+            document.getElementById("macos-cbox").checked = (this.engine.os.indexOf("MacOS") != -1);
         }
 
-        let sourceList = document.getElementById("source-list");
-        for (let source of this.engine.sources) {
-            sourceList.append(htmlToElement(`<li>${source.site} <a href="${source.url}">(link)</a></li>`));
-            sourceList.lastChild.addEventListener('click', function (e) {
-                document.getElementById("source-input").value = this.innerText.substring(0, this.innerText.length - 7);
-                document.getElementById("source-url-input").value = this.lastChild.href;
-            });
-        }
+        if (this.engine.language) document.getElementById("lang-input").value = this.engine.language;
+        if (this.engine.license) document.getElementById("license-input").value = this.engine.license;
+        if (this.engine.readme) document.getElementById("md-article-edit").value = this.engine.readme;
 
-        let ratingList = document.getElementById("rating-list");
-        for (let rating of this.engine.ratings) {
-            ratingList.append(htmlToElement(`<li>${rating.site} <a href="${rating.url}">(link)</a></li>`));
-            ratingList.lastChild.addEventListener('click', function (e) {
-                document.getElementById("rating-input").value = this.innerText.substring(0, this.innerText.length - 7);
-                document.getElementById("rating-url-input").value = this.lastChild.href;
-            })
+        if (this.engine.authors) {
+            let authorList = document.getElementById("author-list");
+            for (let author of this.engine.authors) {
+                authorList.append(htmlToElement(`<li>${author}</li>`));
+                authorList.lastChild.addEventListener('click', function (e) {
+                    document.getElementById("author-input").value = this.innerHTML;
+                });
+            }
+        }
+        if (this.engine.sources) {
+            let sourceList = document.getElementById("source-list");
+            for (let source of this.engine.sources) {
+                sourceList.append(htmlToElement(`<li>${source.site} <a href="${source.url}">(link)</a></li>`));
+                sourceList.lastChild.addEventListener('click', function (e) {
+                    document.getElementById("source-input").value = this.innerText.substring(0, this.innerText.length - 7);
+                    document.getElementById("source-url-input").value = this.lastChild.href;
+                });
+            }
+        }
+        if (this.engine.ratings) {
+            let ratingList = document.getElementById("rating-list");
+            for (let rating of this.engine.ratings) {
+                ratingList.append(htmlToElement(`<li>${rating.site} <a href="${rating.url}">(link)</a></li>`));
+                ratingList.lastChild.addEventListener('click', function (e) {
+                    document.getElementById("rating-input").value = this.innerText.substring(0, this.innerText.length - 7);
+                    document.getElementById("rating-url-input").value = this.lastChild.href;
+                })
+            }
         }
     }
 }
@@ -243,6 +246,9 @@ osc.EngineDetailManager = class {
 	}
 	stopListening() { this._unsubscribe(); }
     update(engineData) {
+        //const metadata = { "content-type": file.type };
+		//const storageRef = firebase.storage().ref().child("").child(rhit.fbAuthManager.uid);
+
         return this._ref.update({
             ["os"]: engineData.os,
 			["readme"]: engineData.readme,
@@ -279,7 +285,7 @@ osc.findEngines = (programLang, license, protocolList, protocolAll, osList, osAl
 
 }
 
-osc.authenticationManager = class {
+osc.AuthenticationManager = class {
     constructor() {
         firebase.auth().onAuthStateChanged(user => {
             if (user) {
@@ -289,14 +295,62 @@ osc.authenticationManager = class {
                 console.log(`The user is signed in ${uid}`);
                 console.log('displayName :>> ', displayName);
                 console.log('email :>> ', email);
+
+                document.getElementById("login-popup-link").innerHTML = "Logout";
             } else {
                 console.log(`There is no user signed in!`);
+            }
+        });
+
+        document.getElementById("login-button").addEventListener('click', e => {
+            firebase.auth().signInWithEmailAndPassword(document.getElementById("login-email").value, document.getElementById("login-password").value)
+		    .catch(error => { console.error(`Existing account login error ${error.code} ${error.message}`); });
+        });
+        document.getElementById("new-account-button").addEventListener('click', e => {
+            let inputPassword1 = document.getElementById("new-account-password1");
+            let inputPassword2 = document.getElementById("new-account-password2");
+            if (inputPassword1.value == inputPassword2.value)
+                firebase.auth().createUserWithEmailAndPassword(document.getElementById("new-account-email").value, inputPassword1.value)
+                .catch(error => { console.error(`Create account error ${error.code} ${error.message}`); });
+            else {
+                alert("Passwords did not match.");
+                inputPassword1.value = "";
+                inputPassword2.value = "";
             }
         });
     }
 }
 
+osc.NavbarManager = class {
+    constructor() {
+        //osc.AuthenticationManager handles the interactions with these menus
+        document.getElementById("login-popup-link").addEventListener('click', e => {
+            document.getElementById("login-popup").style.display = "inline-block";
+            document.getElementById("popup-background").hidden = false;
+        });
+        document.getElementById("login-popup-close").addEventListener('click', e => {
+            document.getElementById("login-popup").style.display = "inline-block";
+            document.getElementById("popup-background").hidden = true;       
+        });
+
+        document.getElementById("new-engine-popup-link").addEventListener('click', e => {
+            document.getElementById("new-engine-popup").style.display = "inline-block";
+            document.getElementById("popup-background").hidden = false;
+        });
+        document.getElementById("new-engine-popup-close").addEventListener('click', e => {
+            document.getElementById("new-engine-popup").style.display = "inline-block";
+            document.getElementById("popup-background").hidden = true;       
+        });
+        document.getElementById("new-engine-button").addEventListener('click', e => {
+            //WTF? Why does the URL this go to contain spaces?? %20, do you exist??
+            document.location.href = `/edit.html?engine=${encodeURIComponent(document.getElementById("engine-name-input").value.trim())}`;
+        });
+    }
+}
+
 osc.main = function () {
+    new osc.NavbarManager();
+    new osc.AuthenticationManager();
     if (document.getElementById("engine-search"))
 	    new osc.EngineSearchController();
     if (document.getElementById("md-article")) {
