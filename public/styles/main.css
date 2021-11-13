@@ -47,16 +47,15 @@ hr {
 .popup-box {
     z-index: 3;
     border: 3px solid #999;
-    width: 50vw;
-    height: 50vh;
-    left: 25vw;
-    top: 25vh;
     position: absolute;
     display: none;
     background-color: #EEEEEE;
 }
 .popup-box input[type=button] {
     margin: 0px auto;
+}
+.popup-box * {
+    max-width: inherit;
 }
 /* From the same source, although this I just straight up copied and tweeked. */
 .popup-close {
@@ -158,6 +157,12 @@ hr {
 }
 
 @media (min-width: 969px) {
+    .popup-box {
+        width: 50vw;
+        height: 50vh;    
+        left: 25vw;
+        top: 25vh;
+    }
     /* Force the info bar to be the entire column */
     .info-bar {
         height: var(--big-body-height);
@@ -182,6 +187,12 @@ hr {
     }
 }
 @media (max-width: 968px) {
+    .popup-box {
+        width: 90vw;
+        height: 80vh;
+        left: 5vw;
+        top: 10vh;
+    }
     /* Force the info-bar to be horizontally displayed above the article */
     /* This looks so ridiculously ugly with all of the info I've put into the bar *sigh*. */
     .info-bar {

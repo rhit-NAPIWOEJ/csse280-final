@@ -41,7 +41,7 @@
   </div>
   
   <header class="navbar">
-    <span><a href="/">OSC</a> | <a class="popup-trigger" id="new-engine-popup-link">New</a></span>
+    <span><a href="/">OSC</a>&nbsp;|&nbsp;<a class="popup-trigger" id="new-engine-popup-link">New</a></span>
     <a class="popup-trigger" id="login-popup-link">Login</a>
   </header>
   
@@ -50,13 +50,13 @@
     <h3 class="text-center">Dedicated to open-source chess.</h3>
     <p>This is a site containing a large list of open-source chess programs, including informative articles about each one.
       In the open-source spirit, you can make also requests to add and edit articles, expanding on the knowledge base.
-      Logging in will allow you to see whether the status of your change requests.
+      Logging in will allow you to see your recent changes.
     </p>
     
     <hr>
     
     <p>In particular, this site has a focus on chess-playing programs and their implementation.
-      A detail search is provided for people looking for engines.
+      Unfortunately, this detail search is not operational due to time constraints.
     </p>
    
     <div id="engine-search">
@@ -115,18 +115,26 @@
           </div>
         </div>
 
-        <input type="button" id="engine-search-btn" value="Search">
+        <input type="button" id="engine-search-btn" value="Search" disabled>
       </div>
     </div>
     <hr>
-    <!-- TODO: Add flexbox icons for various articles -->
+      <div id="engine-search">
+        <h3>Newly Edited:</h3>
+        <div class="flex-wrap" id="engineCardContainer"></div>
+      </div>
     <hr>
-    
+      <div id="engine-search">
+        <h3>Your Recently Edited:</h3>
+        <div class="flex-wrap" id="yourEngineCardContainer"></div>
+      </div>
+    <hr>
   </div>
 
   <script src="/__/firebase/7.18.0/firebase-app.js"></script>
   <script src="/__/firebase/7.18.0/firebase-auth.js"></script>
   <script src="/__/firebase/7.18.0/firebase-firestore.js"></script>
+  <script src="/__/firebase/7.18.0/firebase-storage.js"></script>
   <script src="/__/firebase/init.js"></script>
   <script src="scripts/purify.min.js"></script>
 

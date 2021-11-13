@@ -1,11 +1,12 @@
 var osc = osc || {};
-//these arrays are technically not constant, but are updated on page init and certain page updates
+//these arrays are technically not constant, but would be updated on page init and certain page updates
 //here they currently just have sample data inside them
 osc.LANG_LIST = ["C", "C++", "C#", "Go", "Java", "Rust"];
 osc.LICENSE_LIST = ["GPL", "MIT"];
 osc.converter = null;
 osc.engineDetailManager = null;
-
+osc.engineListManager = null;
+osc.authManager = null;
 
 function htmlToElement(html) {
 	var template = document.createElement('template');
@@ -44,17 +45,77 @@ osc.EngineSearchController = class {
             if (linuxBox.checked) osList.append("Linux");
             if (macBox.checked) osList.append("MacOS");
 
-            osc.findEngines(programLangDrop.value, licenseDrop.value,
-                protocolList, (document.getElementById("protocol-drop").value == "All of"),
-                osList, (document.getElementById("os-drop").value == "All of"));
+            //well, there would be more code here if i could finish this feature
         });
+        osc.engineListManager = new osc.EngineListManager();
+        osc.engineListManager.beginListening(this.updateList.bind(this));
     }
+    updateList() {
+        let engineCardList = document.getElementById("engineCardContainer");
+        while (engineCardList.firstChild) engineCardList.removeChild(engineCardList.firstChild);
+        for (let i = 0; i < osc.engineListManager.length; i++) {
+            let data = osc.engineListManager.getDocSnapAtIndex(0);
+            const newItem = htmlToElement(
+                `<div class="engine-search-tool">
+                    <h3>${data.get("name")}</h3>
+                    <p>A ${data.get("license")} engine in ${data.get("language")}</p>
+                    <p>for ${data.get("os").toString().replace(",", ", ")}.</p>
+                </div>`);
+            engineCardList.appendChild(newItem);
+            newItem.addEventListener('click', e => {
+                document.location.href = `/engine.html?engine=${data.get("name")}`;
+            });
+        }    
+
+        engineCardList = document.getElementById("yourEngineCardContainer");
+        while (engineCardList.firstChild) engineCardList.removeChild(engineCardList.firstChild);
+        for (let i = 0; i < osc.engineListManager.length2; i++) {
+            let data = osc.engineListManager.getDocSnapAtIndex2(0);
+            const newItem = htmlToElement(
+                `<div class="engine-search-tool">
+                    <h3>${data.get("name")}</h3>
+                    <p>A ${data.get("license")} engine in ${data.get("language")}</p>
+                    <p>for ${data.get("os").toString().replace(",", ", ")}.</p>
+                </div>`);
+            engineCardList.appendChild(newItem);
+            newItem.addEventListener('click', e => {
+                document.location.href = `/engine.html?engine=${data.get("name")}`;
+            });
+        }  
+    }
+}
+osc.EngineListManager = class {
+    constructor() {
+        this._documentSnapshots = [];
+        this._documentSnapshots2 = [];
+		this._ref = firebase.firestore().collection("engines");
+		this._unsubscribe = null;
+        this._unsubscribe2 = null;
+    }
+    beginListening(changeListener) {
+		let query = this._ref.orderBy("lastUpdated", "desc").limit(50);
+        let query2 = this._ref.orderBy("lastUpdated", "desc").limit(10).where("uid", "==", (osc.authManager.uid)?osc.authManager.uid:"0");
+
+		this._unsubscribe = query.onSnapshot(querySnapshot => {
+			this._documentSnapshots = querySnapshot.docs;
+			changeListener();
+		});
+        this._unsubscribe2 = query2.onSnapshot(querySnapshot => {
+			this._documentSnapshots2 = querySnapshot.docs;
+			changeListener();
+		});
+	}
+	stopListening() { this._unsubscribe(); this._unsubscribe2(); }
+    get length() { return this._documentSnapshots.length; }
+    getDocSnapAtIndex(index) { return this._documentSnapshots[index]; }
+    get length2() { return this._documentSnapshots2.length; }
+    getDocSnapAtIndex2(index) { return this._documentSnapshots2[index]; }
 }
 
 osc.EnginePageController = class {
     constructor(engineName) {
-        this.engineName = document.title = engineName;       
-        osc.engineDetailManager = new osc.EngineDetailManager(engineName);
+        this.engineName = document.title = DOMPurify.sanitize(engineName);       
+        osc.engineDetailManager = new osc.EngineDetailManager(this.engineName);
         osc.engineDetailManager.beginListening(this.initializeView.bind(this));
     }  
     initializeView() {
@@ -62,6 +123,10 @@ osc.EnginePageController = class {
         let sourceList = document.getElementById("source-list");
         let ratingList = document.getElementById("rating-list");
         let osList = document.getElementById("os-list");
+
+        osc.engineDetailManager.returnLogo().then(url => {
+            document.getElementById("engine-logo").src = url;
+        });
 
         //Idea for emptying "ul"s from https://developer.mozilla.org/en-US/docs/Web/API/Node/removeChild
         for (let list of [authorList, sourceList, ratingList, osList]) while (list.firstChild) list.removeChild(list.firstChild);
@@ -73,7 +138,7 @@ osc.EnginePageController = class {
         document.getElementById("language-label").innerHTML = DOMPurify.sanitize(`Programming Language: ${osc.engineDetailManager.language}`);
         document.getElementById("license-label").innerHTML = DOMPurify.sanitize(`Licensed Under: ${osc.engineDetailManager.license}`);
  
-        document.getElementById("md-article").innerHTML =  DOMPurify.sanitize(
+        document.getElementById("md-article").innerHTML = DOMPurify.sanitize(
             `<p style="text-align:right"><a href="/edit.html?engine=${this.engineName}">Edit</a></p>` + osc.converter.makeHtml(osc.engineDetailManager.readme));
 
         for (let author of osc.engineDetailManager.authors) authorList.append(htmlToElement(`<li>${author}</li>`));
@@ -84,17 +149,12 @@ osc.EnginePageController = class {
 }
 osc.EditPageController = class {
     constructor(engineName) {
-        document.title = engineName;
+        document.title = DOMPurify.sanitize(engineName);
         
         osc.engineDetailManager = new osc.EngineDetailManager(engineName);
         osc.engineDetailManager.beginListening(this.initializeView.bind(this));
 
         this.engine = new osc.Engine();
-
-        document.getElementById("submit-button").addEventListener('click', e => {
-            osc.engineDetailManager.update(this.engine)
-            .then(() => document.location.href = `/engine.html?engine=${engineName}`);
-        });
 
         let authorInput = document.getElementById("author-input");
         let authorList = document.getElementById("author-list");
@@ -180,15 +240,25 @@ osc.EditPageController = class {
         logoInput.addEventListener('change', e => {
             document.getElementById("engine-logo").src = URL.createObjectURL(logoInput.files[0]);
         });
+
+        document.getElementById("submit-button").addEventListener('click', e => {
+            osc.engineDetailManager.update(this.engine)
+            .then(() => document.location.href = `/engine.html?engine=${engineName}`);
+        });
     }
     initializeView() {
-        this.engine.os = osc.engineDetailManager.os;
-        this.engine.readme = osc.engineDetailManager.readme;
-        this.engine.authors = osc.engineDetailManager.authors;
-        this.engine.license = osc.engineDetailManager.license;
-        this.engine.sources = osc.engineDetailManager.sources;
-        this.engine.ratings = osc.engineDetailManager.ratings;
-        this.engine.language = osc.engineDetailManager.language;
+        if (!this.engine.os.length) this.engine.os = osc.engineDetailManager.os;
+        if (!this.engine.readme) this.engine.readme = osc.engineDetailManager.readme;
+        if (!this.engine.authors.length) this.engine.authors = osc.engineDetailManager.authors;
+        if (!this.engine.license) this.engine.license = osc.engineDetailManager.license;
+        if (!this.engine.sources.length) this.engine.sources = osc.engineDetailManager.sources;
+        if (!this.engine.ratings.length) this.engine.ratings = osc.engineDetailManager.ratings;
+        if (!this.engine.language) this.engine.language = osc.engineDetailManager.language;
+
+        osc.engineDetailManager.returnLogo().then(url => {
+            document.getElementById("engine-logo").src = url;
+            document.getElementById("engine-logo").alt = "Logo of " + document.title; /* :/  */
+        });
         
         if (this.engine.os) {
             document.getElementById("windows-cbox").checked = (this.engine.os.indexOf("Windows") != -1);
@@ -209,7 +279,7 @@ osc.EditPageController = class {
                 });
             }
         }
-        if (this.engine.sources) {
+        if (this.engine.sources) {  
             let sourceList = document.getElementById("source-list");
             for (let source of this.engine.sources) {
                 sourceList.append(htmlToElement(`<li>${source.site} <a href="${source.url}">(link)</a></li>`));
@@ -219,8 +289,8 @@ osc.EditPageController = class {
                 });
             }
         }
-        if (this.engine.ratings) {
-            let ratingList = document.getElementById("rating-list");
+        if (this.engine.ratings) {  
+            let ratingList = document.getElementById("rating-list");      
             for (let rating of this.engine.ratings) {
                 ratingList.append(htmlToElement(`<li>${rating.site} <a href="${rating.url}">(link)</a></li>`));
                 ratingList.lastChild.addEventListener('click', function (e) {
@@ -237,6 +307,7 @@ osc.EngineDetailManager = class {
         this._unsubscribe = null;
         this._documentSnapshot = {};
         this._ref = firebase.firestore().collection("engines").doc(engineName);
+        this.engineName = engineName;
     }
     beginListening(changeListener) {
 		this._unsubscribe = this._ref.onSnapshot(doc => {
@@ -246,20 +317,25 @@ osc.EngineDetailManager = class {
 	}
 	stopListening() { this._unsubscribe(); }
     update(engineData) {
-        //const metadata = { "content-type": file.type };
-		//const storageRef = firebase.storage().ref().child("").child(rhit.fbAuthManager.uid);
-
         return this._ref.update({
-            ["os"]: engineData.os,
-			["readme"]: engineData.readme,
-            ["authors"]: engineData.authors,
-            ["license"]: engineData.license,          
-            ["sources"]: engineData.sources,
-            ["ratings"]: engineData.ratings,
-            ["language"]: engineData.language,
+            ["os"]: engineData.os || [],
+            ["uid"]: osc.authManager.uid || "", //also a last-minute addition
+            ["name"]: this.engineName, //this is completely embarassing how I have to do this for engine boxes on homepage
+			["readme"]: engineData.readme || "",
+            ["authors"]: engineData.authors || [],
+            ["license"]: engineData.license || "",          
+            ["sources"]: engineData.sources || [],
+            ["ratings"]: engineData.ratings || [],
+            ["language"]: engineData.language || "",
             ["lastUpdated"]: firebase.firestore.Timestamp.now(),
-		});
+		}).then(resp => this.updateImage(engineData));
     }
+    updateImage() {
+        let logoInput = document.getElementById("logo-upload").files[0];
+        if (logoInput)
+            return firebase.storage().ref().child(`logos/${this.engineName}`).put(logoInput, { "content-type": logoInput.type });
+    }
+    returnLogo() { return firebase.storage().ref().child(`logos/${this.engineName}`).getDownloadURL(); }
     get os() { return this._documentSnapshot.get("os"); }
     get readme() { return this._documentSnapshot.get("readme"); }
     get authors() { return this._documentSnapshot.get("authors"); }
@@ -272,6 +348,7 @@ osc.EngineDetailManager = class {
 osc.Engine = class {
     constructor() {
         this.os = [];
+        this.logo = "";
         this.readme = "";
         this.authors = [];
         this.sources = [];
@@ -281,30 +358,46 @@ osc.Engine = class {
     }
 }
 
-osc.findEngines = (programLang, license, protocolList, protocolAll, osList, osAll) => {
-
-}
-
 osc.AuthenticationManager = class {
     constructor() {
+        this.uid = null;
+        this.flag = 0;
         firebase.auth().onAuthStateChanged(user => {
             if (user) {
                 var displayName = user.displayName;
                 var email = user.email;
-                var uid = user.uid;
-                console.log(`The user is signed in ${uid}`);
-                console.log('displayName :>> ', displayName);
+                this.uid = user.uid;
+                console.log(`The user is signed in ${this.uid}`);
                 console.log('email :>> ', email);
 
                 document.getElementById("login-popup-link").innerHTML = "Logout";
             } else {
                 console.log(`There is no user signed in!`);
+                this.uid = null;
+                document.getElementById("login-popup-link").innerHTML = "Login";
+            }
+            if (!this.flag) {
+                if (document.getElementById("engine-search")) {
+                    new osc.EngineListManager();
+                    new osc.EngineSearchController();
+                }
+                if (document.getElementById("md-article")) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    new osc.EnginePageController(urlParams.get('engine'));
+                }
+                if (document.getElementById("md-article-edit")) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    new osc.EditPageController(urlParams.get('engine'));
+                }
+                this.flag = 1;
             }
         });
 
         document.getElementById("login-button").addEventListener('click', e => {
             firebase.auth().signInWithEmailAndPassword(document.getElementById("login-email").value, document.getElementById("login-password").value)
 		    .catch(error => { console.error(`Existing account login error ${error.code} ${error.message}`); });
+            document.getElementById("login-popup").style.display = "none";
+            document.getElementById("popup-background").hidden = true; 
         });
         document.getElementById("new-account-button").addEventListener('click', e => {
             let inputPassword1 = document.getElementById("new-account-password1");
@@ -317,6 +410,8 @@ osc.AuthenticationManager = class {
                 inputPassword1.value = "";
                 inputPassword2.value = "";
             }
+            document.getElementById("login-popup").style.display = "none";
+            document.getElementById("popup-background").hidden = true;
         });
     }
 }
@@ -325,11 +420,14 @@ osc.NavbarManager = class {
     constructor() {
         //osc.AuthenticationManager handles the interactions with these menus
         document.getElementById("login-popup-link").addEventListener('click', e => {
-            document.getElementById("login-popup").style.display = "inline-block";
-            document.getElementById("popup-background").hidden = false;
+            if (document.getElementById("login-popup-link").innerHTML == "Login") {
+                document.getElementById("login-popup").style.display = "inline-block";
+                document.getElementById("popup-background").hidden = false;
+            } else
+                firebase.auth().signOut();
         });
         document.getElementById("login-popup-close").addEventListener('click', e => {
-            document.getElementById("login-popup").style.display = "inline-block";
+            document.getElementById("login-popup").style.display = "none";
             document.getElementById("popup-background").hidden = true;       
         });
 
@@ -338,7 +436,7 @@ osc.NavbarManager = class {
             document.getElementById("popup-background").hidden = false;
         });
         document.getElementById("new-engine-popup-close").addEventListener('click', e => {
-            document.getElementById("new-engine-popup").style.display = "inline-block";
+            document.getElementById("new-engine-popup").style.display = "none";
             document.getElementById("popup-background").hidden = true;       
         });
         document.getElementById("new-engine-button").addEventListener('click', e => {
@@ -350,17 +448,7 @@ osc.NavbarManager = class {
 
 osc.main = function () {
     new osc.NavbarManager();
-    new osc.AuthenticationManager();
-    if (document.getElementById("engine-search"))
-	    new osc.EngineSearchController();
-    if (document.getElementById("md-article")) {
-        const urlParams = new URLSearchParams(window.location.search);
-        new osc.EnginePageController(urlParams.get('engine'));
-    }
-    if (document.getElementById("md-article-edit")) {
-        const urlParams = new URLSearchParams(window.location.search);
-        new osc.EditPageController(urlParams.get('engine'));
-    }
+    osc.authManager = new osc.AuthenticationManager();
 };
 
 osc.main();
